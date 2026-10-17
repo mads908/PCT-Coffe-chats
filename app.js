@@ -56,7 +56,8 @@ $("authform").addEventListener("submit", async (ev) => {
   } finally { $("authbtn").disabled = false; }
 });
 $("back").onclick = () => setStep("email", "Enter your Babson email to sign in.");
-$("signout").onclick = () => sb.auth.signOut();
+// Switch the page to signed out first, then drop the saved session on this device without waiting on the server.
+$("signout").onclick = () => { handleSession(null); sb.auth.signOut({ scope: "local" }); };
 
 sb.auth.onAuthStateChange((event, session) => { setTimeout(() => handleSession(session), 0); });
 
