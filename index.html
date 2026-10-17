@@ -3,136 +3,235 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PCT Coffee Chats</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&display=swap">
+<title>PCT Pledge Warnings</title>
+<link rel="icon" type="image/svg+xml" href="crest.svg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
 
-/* Layout: one page. Summary strip, log form, then a pledge x brother grid with a sticky name column. */
+/* Layout: one page. Pledges see their own standing; brothers give warnings and see the whole class; Marshalls also manage pledges and logins. */
 :root {
-  --bg: #f6f4fa;
+  --bg: #f6f5f9;
   --surface: #ffffff;
-  --ink: #1e1530;
-  --muted: #6b6180;
-  --line: #ddd7ea;
-  --accent: #4b2a8c;
-  --accent-soft: #e7dff7;
-  --done: #1f8a5b;
-  --done-soft: #d9f0e5;
-  --warn: #b4531a;
-  --font: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --ink: #1a1424;
+  --muted: #645d70;
+  --faint: #8f889b;
+  --line: #e6e2ec;
+  --accent: #3f056b;
+  --accent-hover: #55127f;
+  --accent-ink: #ffffff;
+  --accent-soft: #f1eaf7;
+  --gold: #efbb0d;
+  --ok: #17784f;
+  --ok-soft: #e3f3eb;
+  --caution: #94600a;
+  --caution-dot: #d99a1e;
+  --caution-soft: #fbf1dc;
+  --danger: #b42318;
+  --danger-dot: #d93a2b;
+  --danger-soft: #fce8e6;
+  --shadow: 0 1px 2px rgba(20, 26, 41, .05);
+  --font: "Inter", "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #130e1f; --surface: #1c1530; --ink: #efeaf8; --muted: #a79cc0; --line: #342b4d;
-    --accent: #a98bff; --accent-soft: #2d2250; --done: #4cc38a; --done-soft: #173a2c; --warn: #f0a070;
+    --bg: #110d17; --surface: #1a1522; --ink: #ece8f2; --muted: #a9a1b6; --faint: #756d82; --line: #2d2638;
+    --accent: #c6a2ee; --accent-hover: #d7bcf3; --accent-ink: #160b22; --accent-soft: #2a1a3d;
+    --ok: #5fd39a; --ok-soft: #12301f; --caution: #f0bf63; --caution-dot: #e5a93a; --caution-soft: #33270f;
+    --danger: #ff9488; --danger-dot: #f0604f; --danger-soft: #3a1714; --shadow: none;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #130e1f; --surface: #1c1530; --ink: #efeaf8; --muted: #a79cc0; --line: #342b4d;
-  --accent: #a98bff; --accent-soft: #2d2250; --done: #4cc38a; --done-soft: #173a2c; --warn: #f0a070;
+  --bg: #110d17; --surface: #1a1522; --ink: #ece8f2; --muted: #a9a1b6; --faint: #756d82; --line: #2d2638;
+  --accent: #c6a2ee; --accent-hover: #d7bcf3; --accent-ink: #160b22; --accent-soft: #2a1a3d;
+  --ok: #5fd39a; --ok-soft: #12301f; --caution: #f0bf63; --caution-dot: #e5a93a; --caution-soft: #33270f;
+  --danger: #ff9488; --danger-dot: #f0604f; --danger-soft: #3a1714; --shadow: none;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 body {
-  background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.45;
-  padding-block: 28px 56px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 64px;
 }
-main { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
-h1 { font-weight: 800; font-size: clamp(28px, 6vw, 44px); line-height: 1; letter-spacing: -0.01em; text-transform: uppercase; margin: 0; text-wrap: balance; }
-.sub { color: var(--muted); margin: 8px 0 0; }
-.stats { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: baseline; }
-.stat { display: flex; flex-direction: column; min-width: 0; }
-.stat b { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
-.stat span { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
-.panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .09em; margin: 0 0 12px; color: var(--muted); font-weight: 600; }
-form.log { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
-.field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 200px; min-width: 0; }
-.field label { font-size: 12px; color: var(--muted); }
-select, input[type="text"] {
-  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
-  padding: 10px 12px; min-height: 42px; width: 100%;
-}
-button.primary {
-  font: inherit; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 8px;
-  padding: 10px 18px; min-height: 42px; cursor: pointer;
-}
-:root[data-theme="dark"] button.primary { color: #130e1f; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button.primary { color: #130e1f; } }
-button.primary:disabled { opacity: .5; cursor: default; }
-button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.msg { min-height: 20px; margin: 10px 0 0; font-size: 14px; color: var(--muted); }
-.msg.ok { color: var(--done); }
-.msg.err { color: var(--warn); }
-.gridwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-table { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; }
-th, td { padding: 0; text-align: center; border-bottom: 1px solid var(--line); }
-tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
-thead th { vertical-align: bottom; padding: 10px 0 8px; font-weight: 500; font-size: 12px; color: var(--muted); height: 118px; }
-thead th .vert { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; display: inline-block; }
-th.name, td.name { position: sticky; left: 0; z-index: 2; background: var(--surface); text-align: left; padding: 10px 14px; min-width: 150px; max-width: 190px; border-right: 1px solid var(--line); }
-th.name { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; vertical-align: bottom; }
-td.name .n { font-weight: 600; display: block; overflow-wrap: anywhere; }
-td.name .p { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.bar { flex: 1; height: 5px; background: var(--accent-soft); border-radius: 3px; overflow: hidden; min-width: 40px; }
-.bar i { display: block; height: 100%; background: var(--accent); }
-.bar.full i { background: var(--done); }
-td.cell, th.col { width: 34px; min-width: 34px; }
-.dot { display: inline-block; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); vertical-align: middle; background: transparent; padding: 0; }
-.dot.on { background: var(--done); border-color: var(--done); box-shadow: inset 0 0 0 3px var(--surface); }
-button.dot { cursor: pointer; }
-td.cell { padding: 12px 0; }
-tfoot td, tfoot th { border-top: 1px solid var(--line); border-bottom: 0; font-size: 12px; color: var(--muted); padding: 8px 0; font-variant-numeric: tabular-nums; background: var(--surface); }
-tfoot th.name { font-weight: 600; }
-th.pcol { color: var(--accent); font-weight: 600; }
-td.pcol { background: var(--bg); }
-tfoot td.pcol { background: var(--bg); }
-.self { color: var(--line); }
-.mine-sum { font-size: 22px; font-weight: 800; margin: 14px 0 0; font-variant-numeric: tabular-nums; }
-.gh { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; margin: 18px 0 8px; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
-.tile { display: flex; min-width: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); overflow: hidden; }
-.tile.met { background: var(--done-soft); border-color: var(--done); }
-.tilebtn { flex: 1; min-width: 0; font: inherit; text-align: left; color: var(--ink); background: transparent; border: 0; padding: 11px 12px; min-height: 44px; cursor: pointer; overflow-wrap: anywhere; }
-.tile.met .tilebtn { cursor: default; }
-.tile.met .tilebtn::before { content: "\2713  "; color: var(--done); font-weight: 800; }
-.tilebtn:hover:not(:disabled) { background: var(--accent-soft); }
-.undo { font: inherit; font-size: 12px; color: var(--muted); background: transparent; border: 0; border-left: 1px solid var(--done); padding: 0 10px; cursor: pointer; }
-.empty { padding: 28px 16px; color: var(--muted); text-align: center; }
-.admin { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 13px; }
-.chip button { font: inherit; border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 2px 6px; border-radius: 999px; }
-.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--muted); align-items: center; }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-@media (prefers-reduced-motion: no-preference) { .bar i { transition: width .3s ease; } }
+[hidden] { display: none !important; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.stack { display: flex; flex-direction: column; gap: 20px; }
 
-[hidden]{display:none!important}
-body{margin:0}
-.topbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; }
-.who { color: var(--muted); font-size: 13px; overflow-wrap:anywhere; }
-button.ghost { font: inherit; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
-.gate { text-align:center; padding: 40px 16px; }
-.authform { display:flex; flex-direction:column; gap:12px; max-width:320px; margin: 14px auto 0; text-align:left; }
+/* top bar */
+.topbar { background: var(--surface); border-bottom: 3px solid var(--gold); margin-bottom: 28px; }
+.topbar .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.crest { flex: none; height: 48px; width: auto; display: block; }
+.crest.lg { height: 96px; margin: 0 auto 18px; }
+/* The crest has black linework, so on dark backgrounds it sits on a light tile. */
+:root[data-theme="dark"] .crest { background: #f6f2ea; border-radius: 10px; padding: 4px 6px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .crest { background: #f6f2ea; border-radius: 10px; padding: 4px 6px; } }
+h1 { font-size: 18px; font-weight: 700; margin: 0; line-height: 1.2; }
+.sub { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
+.userbox { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.who { color: var(--muted); font-size: 13px; text-align: right; overflow-wrap: anywhere; }
+.who b { display: block; color: var(--ink); font-weight: 600; }
+
+/* cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); }
+.card.flush { padding: 0; overflow: hidden; }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; padding: 18px 20px 14px; }
+.card-title { font-size: 15px; font-weight: 600; margin: 0 0 14px; }
+.card-head .card-title { margin: 0; }
+.hint { color: var(--muted); font-size: 13px; margin: 0; }
+
+/* stat tiles */
+.statgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); min-width: 0; }
+.tile span { display: block; font-size: 13px; color: var(--muted); }
+.tile b { display: block; font-size: 28px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.tile.bad b { color: var(--danger); }
+.tile.mid b { color: var(--caution); }
+
+/* forms */
+form.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; min-width: 0; }
+.field.grow { flex: 2 1 260px; }
+.field label { font-size: 13px; font-weight: 500; color: var(--ink); }
+select, input[type="text"], input[type="email"], input[type="password"] {
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 12px; min-height: 42px; width: 100%;
+}
+input::placeholder { color: var(--faint); }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; }
+button { font: inherit; cursor: pointer; }
+button.primary, button.danger { font-weight: 600; color: var(--accent-ink); background: var(--accent); border: 0; border-radius: 8px; padding: 9px 18px; min-height: 42px; }
+button.primary:hover { background: var(--accent-hover); }
+button.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+button.danger:hover { background: var(--danger-soft); }
+button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 7px 14px; }
+button.ghost:hover { background: var(--bg); }
+button.link { background: none; border: 0; padding: 4px 6px; color: var(--muted); font-size: 13px; border-radius: 6px; }
+button.link:hover { color: var(--danger); background: var(--danger-soft); }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* status message */
+.notice { margin: 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; background: var(--accent-soft); color: var(--ink); }
+.notice:empty { display: none; }
+.notice.ok { background: var(--ok-soft); color: var(--ok); }
+.notice.err { background: var(--danger-soft); color: var(--danger); }
+
+/* badges and dots */
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge.ok { background: var(--ok-soft); color: var(--ok); }
+.badge.mid { background: var(--caution-soft); color: var(--caution); }
+.badge.bad { background: var(--danger-soft); color: var(--danger); }
+.badge.plain::before { display: none; }
+.pips { display: inline-flex; gap: 5px; vertical-align: middle; }
+.pips i { width: 12px; height: 12px; border-radius: 50%; background: var(--line); }
+.pips i.on.w { background: var(--caution-dot); }
+.pips i.on.d { background: var(--danger-dot); }
+.pips.lg { gap: 8px; }
+.pips.lg i { width: 22px; height: 22px; }
+.meter { display: inline-flex; align-items: center; gap: 8px; }
+.meter small { display: none; font-size: 12px; color: var(--muted); }
+
+/* pledge class table */
+.board-head, .board summary { display: grid; grid-template-columns: minmax(0, 1fr) 120px 120px 170px; align-items: center; gap: 12px; padding: 0 20px; }
+.board-head { font-size: 12px; font-weight: 600; color: var(--muted); padding-top: 10px; padding-bottom: 10px; background: var(--bg); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.board summary .badge { justify-self: start; }
+.board details + details { border-top: 1px solid var(--line); }
+.board summary { min-height: 52px; cursor: pointer; list-style: none; }
+.board summary::-webkit-details-marker { display: none; }
+.board summary:hover { background: var(--bg); }
+.board details[open] summary { background: var(--bg); }
+.pname { font-weight: 500; overflow-wrap: anywhere; display: flex; align-items: center; gap: 10px; }
+.pname::before { content: ""; flex: none; width: 7px; height: 7px; border-right: 1.5px solid var(--faint); border-bottom: 1.5px solid var(--faint); transform: rotate(-45deg); transition: transform .15s; }
+details[open] .pname::before { transform: rotate(45deg); }
+.board .detail { padding: 4px 20px 16px 37px; background: var(--bg); }
+.empty { padding: 32px 20px; color: var(--muted); text-align: center; }
+
+/* history */
+.history { list-style: none; margin: 0; padding: 0; }
+.history li { display: grid; grid-template-columns: 82px minmax(0, 1fr) auto auto; align-items: center; gap: 4px 14px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.history li:last-child { border-bottom: 0; }
+.history .badge { justify-self: start; }
+.history .reason { overflow-wrap: anywhere; }
+.history .meta { font-size: 13px; color: var(--muted); white-space: nowrap; }
+.history.none { color: var(--muted); font-size: 14px; padding: 10px 0; }
+
+/* pledge's own view */
+.standing-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.standing-top .badge { font-size: 14px; padding: 6px 14px; }
+.meters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+.meterbox { border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.meterbox span { font-size: 13px; color: var(--muted); }
+.meterbox b { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.section-label { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0 0 4px; }
+
+/* Marshall tools */
+.tool { border-top: 1px solid var(--line); }
+.tool > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; cursor: pointer; list-style: none; font-weight: 600; }
+.tool > summary::-webkit-details-marker { display: none; }
+.tool > summary:hover { background: var(--bg); }
+.tool > summary .badge { background: var(--accent-soft); color: var(--accent); }
+.tool-body { padding: 4px 20px 20px; display: flex; flex-direction: column; gap: 14px; }
+.rows { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 10px; max-height: 420px; overflow-y: auto; }
+.rows li { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 14px; border-bottom: 1px solid var(--line); min-width: 0; }
+.rows li:last-child { border-bottom: 0; }
+.rows .main { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 0 10px; align-items: baseline; }
+.rows .main b { font-weight: 500; }
+.rows .main span { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+
+/* sign in */
+.gate { max-width: 400px; margin: 24px auto 0; padding: 28px; }
+.gate h2 { font-size: 20px; font-weight: 700; margin: 0 0 6px; text-align: center; }
+.gate > .hint { text-align: center; }
+.authform { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
 .authform .field { flex: none; }
+.authform button { width: 100%; }
+
+@media (max-width: 720px) {
+  .board-head { display: none; }
+  .board summary { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "n s" "w d"; padding-top: 12px; padding-bottom: 12px; row-gap: 8px; }
+  .board summary .pname { grid-area: n; }
+  .board summary .badge { grid-area: s; justify-self: end; }
+  .board summary .meter.w { grid-area: w; }
+  .board summary .meter.d { grid-area: d; justify-self: end; }
+  .meter small { display: inline; }
+  .board .detail { padding-left: 20px; }
+  .history li { grid-template-columns: auto minmax(0, 1fr); }
+  .history .meta { grid-column: 1 / -1; white-space: normal; }
+  .history li button { grid-column: 1 / -1; justify-self: start; padding-left: 0; }
+  .statgrid { gap: 8px; }
+  .tile { padding: 12px; }
+  .tile b { font-size: 22px; }
+  .who { display: none; }
+}
+@media (max-width: 420px) {
+  .meters { grid-template-columns: 1fr; }
+  .sub { display: none; }
+}
 
 </style>
 </head>
 <body>
-<main>
-  <header class="topbar">
-    <div>
-      <h1>PCT Coffee Chats</h1>
-      <p class="sub">Every pledge meets every brother and every other pledge. Sign in and tap each person after your chat.</p>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <img class="crest" src="crest.svg" alt="" width="42" height="48">
+      <div>
+        <h1>Pledge Warnings</h1>
+        <p class="sub">3 warnings = 1 demerit · 3 demerits = discussion of drop</p>
+      </div>
     </div>
-    <div id="userbox" hidden><span class="who" id="who"></span> <button class="ghost" id="signout" type="button">Sign out</button></div>
-  </header>
+    <div class="userbox" id="userbox" hidden><span class="who" id="who"></span><button class="ghost" id="signout" type="button">Sign out</button></div>
+  </div>
+</header>
 
-  <section class="panel gate" id="gate">
-    <p id="authmsg" class="msg" role="status">Enter your Babson email to sign in.</p>
+<main class="wrap">
+  <section class="card gate" id="gate">
+    <img class="crest lg" src="crest.svg" alt="" width="85" height="96">
+    <h2>Sign in</h2>
+    <p id="authmsg" class="hint" role="status">Enter your Babson email to sign in.</p>
     <form id="authform" class="authform">
       <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="username" placeholder="you@babson.edu" required></div>
       <div class="field" id="pwfield" hidden><label for="password" id="pwlabel">Password</label><input type="password" id="password" autocomplete="current-password"></div>
@@ -142,32 +241,59 @@ button.ghost { font: inherit; background: transparent; color: var(--ink); border
     </form>
   </section>
 
-  <div id="app" hidden style="display:flex;flex-direction:column;gap:22px">
-    <section class="stats" aria-label="Progress" id="stats"></section>
+  <div id="app" class="stack" hidden>
+    <p class="notice" id="msg" role="status"></p>
 
-    <section class="panel" aria-labelledby="logh">
-      <h2 id="logh">Your coffee chats</h2>
-      <p class="msg" id="msg" role="status"></p>
-      <div id="mine"></div>
+    <section class="card" id="mine" hidden aria-labelledby="mineh">
+      <h2 class="card-title" id="mineh">Your standing</h2>
+      <div id="minebody"></div>
     </section>
 
-    <section aria-label="Coffee chat grid">
-      <div class="gridwrap" id="gridwrap"></div>
-      <div class="legend" style="margin-top:10px">
-        <span><i class="dot on"></i> Met</span>
-        <span><i class="dot"></i> Not yet</span>
-        <span>Purple names on the right are the pledges.</span>
-        <span id="adminhint" hidden>Marshalls can tap a dot to fix a mistake.</span>
-      </div>
-    </section>
+    <div id="brotherview" class="stack" hidden>
+      <section class="statgrid" aria-label="Pledge class summary" id="stats"></section>
 
-    <section class="panel" id="adminpanel" hidden aria-labelledby="adminh">
-      <h2 id="adminh">Manage pledges (Marshalls)</h2>
-      <form class="admin" id="addform">
-        <div class="field"><label for="newpledge">Pledge full name</label><input type="text" id="newpledge" autocomplete="off"></div>
-        <button class="primary" type="submit">Add pledge</button>
-      </form>
-      <div class="chips" id="chips"></div>
+      <section class="card" aria-labelledby="giveh">
+        <h2 class="card-title" id="giveh">Give a warning</h2>
+        <form class="row" id="giveform">
+          <div class="field"><label for="givepledge">Pledge</label><select id="givepledge"></select></div>
+          <div class="field grow"><label for="reason">Reason</label><input type="text" id="reason" maxlength="200" autocomplete="off" placeholder="e.g. Late to chapter"></div>
+          <div class="btns">
+            <button class="primary" type="submit">Give warning</button>
+            <button class="danger" type="button" id="givedemerit" hidden>Give demerit</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card flush" aria-labelledby="boardh">
+        <div class="card-head"><h2 class="card-title" id="boardh">Pledge class</h2><p class="hint">Select a name to see their history</p></div>
+        <div class="board" id="board"></div>
+      </section>
+    </div>
+
+    <section class="card flush" id="adminpanel" hidden aria-labelledby="adminh">
+      <div class="card-head"><h2 class="card-title" id="adminh">Marshall tools</h2><p class="hint">Only Marshalls see this</p></div>
+      <details class="tool">
+        <summary>Pledges <span class="badge plain" id="pledgecount"></span></summary>
+        <div class="tool-body">
+          <form class="row" id="addform">
+            <div class="field"><label for="newpledge">Add a pledge</label><input type="text" id="newpledge" autocomplete="off" placeholder="Full name"></div>
+            <button class="primary" type="submit">Add pledge</button>
+          </form>
+          <ul class="rows" id="chips"></ul>
+        </div>
+      </details>
+      <details class="tool">
+        <summary>Logins <span class="badge plain" id="logincount"></span></summary>
+        <div class="tool-body">
+          <p class="hint">Only these emails can sign in. Each one is linked to a person so the site knows who they are.</p>
+          <form class="row" id="loginform">
+            <div class="field"><label for="loginemail">Email</label><input type="email" id="loginemail" autocomplete="off" placeholder="name@babson.edu"></div>
+            <div class="field"><label for="loginperson">Person</label><select id="loginperson"></select></div>
+            <button class="primary" type="submit">Add login</button>
+          </form>
+          <ul class="rows" id="logins"></ul>
+        </div>
+      </details>
     </section>
   </div>
 </main>

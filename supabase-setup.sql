@@ -1,4 +1,4 @@
--- PCT Coffee Chats. Paste all of this into Supabase > SQL Editor and click Run.
+-- PCT Pledge Warnings. Paste all of this into Supabase > SQL Editor and click Run.
 -- Then in Authentication > Sign In / Providers: turn Email on, turn "Confirm email" off, minimum password length 8.
 
 create table people (
@@ -7,20 +7,11 @@ create table people (
   role text not null check (role in ('brother', 'pledge'))
 );
 
-create table chats (
-  id text primary key,
-  pledge text not null,
-  other text not null,
-  logged_by text not null,
-  ts bigint not null
-);
-
 create table marshalls (
   email text primary key
 );
 
 alter table people enable row level security;
-alter table chats enable row level security;
 alter table marshalls enable row level security;
 
 -- Who can sign in, and which person each login is. No policies: only the functions below read it.
@@ -57,15 +48,43 @@ $$;
 revoke execute on function public.my_person() from public, anon;
 grant execute on function public.my_person() to authenticated;
 
+create function public.my_role() returns text
+language sql stable security definer set search_path = public as $$
+  select p.role from members m join people p on p.id = m.person_id where m.email = lower(auth.jwt() ->> 'email')
+$$;
+revoke execute on function public.my_role() from public, anon;
+grant execute on function public.my_role() to authenticated;
+
+create function public.is_brother() returns boolean
+language sql stable as $$
+  select public.is_member() and (public.my_role() = 'brother' or public.is_marshall())
+$$;
+
+-- One row per warning or demerit. Every 3 warnings count as a demerit (worked out in the app, not stored).
+create table marks (
+  id bigint generated always as identity primary key,
+  pledge text not null references people(id) on delete cascade,
+  kind text not null check (kind in ('warning', 'demerit')),
+  reason text not null check (length(trim(reason)) > 0),
+  given_by text default public.my_person() references people(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+alter table marks enable row level security;
+
 create policy "members read people" on people for select using (public.is_member());
 create policy "marshalls edit people" on people for all using (public.is_marshall()) with check (public.is_marshall());
-create policy "members read chats" on chats for select using (public.is_member());
--- You can only log or undo chats you're part of. Marshalls can fix anyone's.
-create policy "members add own chats" on chats for insert
-  with check (public.is_member() and logged_by = (auth.jwt() ->> 'email') and id = pledge || '__' || other
-    and (public.my_person() in (pledge, other) or public.is_marshall()));
-create policy "members remove own chats" on chats for delete
-  using (public.is_member() and (public.my_person() in (pledge, other) or public.is_marshall()));
+
+create policy "brothers see all marks, pledges see their own" on marks for select
+  using (public.is_brother() or (public.is_member() and pledge = public.my_person()));
+create policy "brothers give warnings, marshalls give demerits" on marks for insert
+  with check (public.is_brother() and given_by is not distinct from public.my_person()
+    and (kind = 'warning' or public.is_marshall())
+    and exists (select 1 from people where id = pledge and role = 'pledge'));
+create policy "marshalls or the giver remove marks" on marks for delete
+  using (public.is_marshall() or (public.is_brother() and given_by = public.my_person()));
+
+create policy "marshalls manage logins" on members for all
+  using (public.is_marshall()) with check (public.is_marshall());
 
 create policy "see own marshall row" on marshalls for select
   using (lower(email) = lower(auth.jwt() ->> 'email'));
@@ -94,7 +113,7 @@ $$;
 revoke execute on function public.login_status(text) from public;
 grant execute on function public.login_status(text) to anon, authenticated;
 
-alter publication supabase_realtime add table people, chats;
+alter publication supabase_realtime add table people, marks;
 
 insert into people (id, name, role) values
   ('b-sophia-draxler', 'Sophia Draxler', 'brother'),
@@ -107,9 +126,13 @@ insert into people (id, name, role) values
   ('b-emily-weinberg', 'Emily Weinberg', 'brother'),
   ('b-mads-syversen', 'Mads Syversen', 'brother'),
   ('b-sam-ross', 'Sam Ross', 'brother'),
-  ('b-alia-andaloussi', 'Alia Andaloussi', 'brother'),
   ('b-maia-vedani', 'Maia Vedani', 'brother'),
   ('b-danica-quinn', 'Danica Quinn', 'brother'),
+  ('b-missy-lohnes', 'Missy Lohnes', 'brother'),
+  ('b-zia-merali', 'Zia Merali', 'brother'),
+  ('b-dev-tanna', 'Dev Tanna', 'brother'),
+  ('b-maia-samaha', 'Maia Samaha', 'brother'),
+  ('b-antonella-camino', 'Antonella Camino', 'brother'),
   ('p-johnny-secco', 'Johnny Secco', 'pledge'),
   ('p-riley-burke', 'Riley Burke', 'pledge'),
   ('p-whitney-anttila', 'Whitney Anttila', 'pledge'),
@@ -135,4 +158,9 @@ insert into members (email, person_id) values
   ('otoothman1@babson.edu', 'p-liv-taylor'), ('laubutlaurin1@babson.edu', 'p-leanne-aubut'), ('vskydan1@babson.edu', 'p-valeriia-skydan'),
   ('aprewo1@babson.edu', 'p-avery-prewo'), ('ameyers1@babson.edu', 'p-ali-meyers'),
   ('mads.syversen@gmail.com', 'b-mads-syversen'),
-  ('msyversen1@babson.edu', 'b-mads-syversen'), ('mcreamer1@babson.edu', 'b-maisie-creamer');
+  ('msyversen1@babson.edu', 'b-mads-syversen'), ('mcreamer1@babson.edu', 'b-maisie-creamer'),
+  ('waldrich1@babson.edu', 'b-liam-aldrich'), ('dquinn3@babson.edu', 'b-danica-quinn'), ('sross1@babson.edu', 'b-sam-ross'),
+  ('gspears1@babson.edu', 'b-garrett-spears'), ('sspiegel1@babson.edu', 'b-samuel-spiegel'), ('eweinberg2@babson.edu', 'b-emily-weinberg'),
+  ('agupta26@babson.edu', 'b-abir-gupta'), ('mlohnes1@babson.edu', 'b-missy-lohnes'), ('zmerali1@babson.edu', 'b-zia-merali'),
+  ('dtanna1@babson.edu', 'b-dev-tanna'), ('msamaha1@babson.edu', 'b-maia-samaha'), ('mvedani1@babson.edu', 'b-maia-vedani'),
+  ('sdraxler1@babson.edu', 'b-sophia-draxler'), ('jfabre1@babson.edu', 'b-jean-fabre'), ('acamino1@babson.edu', 'b-antonella-camino');
