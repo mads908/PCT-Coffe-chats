@@ -116,7 +116,8 @@ body{margin:0}
 .who { color: var(--muted); font-size: 13px; overflow-wrap:anywhere; }
 button.ghost { font: inherit; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
 .gate { text-align:center; padding: 40px 16px; }
-.bigcode { font-size: 64px; font-weight: 800; letter-spacing: .18em; margin: 6px 0; font-variant-numeric: tabular-nums; color: var(--accent); }
+.authform { display:flex; flex-direction:column; gap:12px; max-width:320px; margin: 14px auto 0; text-align:left; }
+.authform .field { flex: none; }
 
 </style>
 </head>
@@ -125,35 +126,27 @@ button.ghost { font: inherit; background: transparent; color: var(--ink); border
   <header class="topbar">
     <div>
       <h1>PCT Coffee Chats</h1>
-      <p class="sub">Every pledge meets every brother and every other pledge. Pledges pick their name and tap each person after the chat.</p>
+      <p class="sub">Every pledge meets every brother and every other pledge. Sign in and tap each person after your chat.</p>
     </div>
     <div id="userbox" hidden><span class="who" id="who"></span> <button class="ghost" id="signout" type="button">Sign out</button></div>
   </header>
 
   <section class="panel gate" id="gate">
-    <div id="loginbox">
-      <p id="authmsg" class="msg" role="status">Enter your school email and your 4 digit code. First time here? Tap "Create my code".</p>
-      <form id="authform" style="display:flex;gap:10px;justify-content:center;align-items:end;flex-wrap:wrap">
-        <div class="field" style="max-width:300px;text-align:left"><label for="email">School email</label><input type="email" id="email" autocomplete="email" placeholder="you@babson.edu" required></div>
-        <div class="field" style="max-width:130px;text-align:left"><label for="pin">4 digit code</label><input type="text" id="pin" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="1234"></div>
-        <button class="primary" id="signin" type="submit">Sign in</button>
-        <button class="ghost" id="create" type="button">First time? Create my code</button>
-      </form>
-    </div>
-    <div id="codebox" hidden>
-      <p class="msg">Your code is</p>
-      <p class="bigcode" id="bigcode"></p>
-      <p class="msg">Screenshot this or write it down. You need it every time you sign in.</p>
-      <button class="primary" id="gocont" type="button">I saved it, continue</button>
-    </div>
+    <p id="authmsg" class="msg" role="status">Enter your Babson email to sign in.</p>
+    <form id="authform" class="authform">
+      <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="username" placeholder="you@babson.edu" required></div>
+      <div class="field" id="pwfield" hidden><label for="password" id="pwlabel">Password</label><input type="password" id="password" autocomplete="current-password"></div>
+      <div class="field" id="pw2field" hidden><label for="password2">Type it again</label><input type="password" id="password2" autocomplete="new-password"></div>
+      <button class="primary" id="authbtn" type="submit">Continue</button>
+      <button class="ghost" id="back" type="button" hidden>Use a different email</button>
+    </form>
   </section>
 
   <div id="app" hidden style="display:flex;flex-direction:column;gap:22px">
     <section class="stats" aria-label="Progress" id="stats"></section>
 
     <section class="panel" aria-labelledby="logh">
-      <h2 id="logh">Your coffee chats (pledges)</h2>
-      <div class="field" style="max-width:340px"><label for="pledge">I'm</label><select id="pledge"></select></div>
+      <h2 id="logh">Your coffee chats</h2>
       <p class="msg" id="msg" role="status"></p>
       <div id="mine"></div>
     </section>

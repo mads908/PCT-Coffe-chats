@@ -1,0 +1,3 @@
+# Secrets: never commit or deploy these
+.env
+.env.*
